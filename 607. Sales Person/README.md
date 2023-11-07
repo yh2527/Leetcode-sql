@@ -1,5 +1,4 @@
 <h3>607. Sales Person</h3>
----
 
 https://leetcode.com/problems/sales-person/description/
 
