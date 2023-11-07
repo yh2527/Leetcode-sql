@@ -1,4 +1,4 @@
-<p style="font-size:large;">607. Sales Person</p>
+<h3>607. Sales Person</h3>
 ---
 
 https://leetcode.com/problems/sales-person/description/
