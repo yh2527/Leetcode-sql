@@ -68,11 +68,17 @@ Other Points:
 		- exclude rows based on a list of values, used when you have a list of static values or when you're using a subquery to generate a list.
 		- If there are any NULL values returned by the subquery in the NOT IN list, the entire query will return zero results.
 		- SQL standard's treatment of NULL is "unknown."
-		- 
+		- SELECT *
+		  FROM TableA
+		  WHERE ColumnX NOT IN (SELECT ColumnY FROM TableB);
+
 	- NOT EXISTS: 
 		- used with a subquery and check if the subquery returns any rows. If the subquery returns no rows, the NOT EXISTS condition is true.
 		- NOT EXISTS will still include rows in the result set if there are NULL values encountered in the subquery.
-		- 
+		- SELECT *
+		  FROM TableA a
+		  WHERE NOT EXISTS (SELECT 1 FROM TableB b WHERE b.ColumnY = a.ColumnX);
+
 
 Solution:
 ```
