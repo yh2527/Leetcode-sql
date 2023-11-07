@@ -1,4 +1,5 @@
-<p style="font-size:24px;">607. Sales Person</p>
+607. Sales Person
+---
 
 https://leetcode.com/problems/sales-person/description/
 
@@ -51,6 +52,7 @@ Each row of this table contains information about one order. This includes the I
 ```
 
 Question: Write a solution to find the names of all the salespersons who did not have any orders related to the company with the name "RED". Return the result table in any order.
+
 ---
 Overview:
 - select SalesPerson.name
