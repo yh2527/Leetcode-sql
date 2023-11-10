@@ -27,20 +27,22 @@ The result format is in the following example.
 ---
 Overview:
 - Count distinct users by date
-- limit the range of the dates
-	- Method 1: manually calculate the dates:
-		- activity_date > '2019-06-27' AND activity_date <= '2019-07-27'
-	- Method 2: use BETWEEN
-		- activity_day BETWEEN '2019-06-28' AND '2019-07-27'
-		- 2019-06-28' is used because the BETWEEN operator is inclusive, which means the begin and end values are included.
-	- Method 3: use DATEDIFF
-		- DATEDIFF(date1, date2) calculates date1 - date2
-		- Option 1:
+- Limit the range of the dates
+	- Arithmetic operators 
+		- option 1: manually calculate the  start date
+			- activity_date>'2019-06-27' AND activity_date<='2019-07-27'
+		- option 2: DATEDIFF(d1, d2)
+			- DATEDIFF(date1, date2) calculates date1 - date2
 			- DATEDIFF('2019-07-27', activity_date)<30 AND DATEDIFF('2019-07-27', activity_date)>=0 
-		- Option 2:
+	- use BETWEEN
+		- option 1: manually calculate the start date
+			- activity_day BETWEEN '2019-06-28' AND '2019-07-27'
+			- 2019-06-28' is used because the BETWEEN operator is inclusive, which means the begin and end values are included.
+		- option 2: DATEDIFF(d1, d2)
 			- DATEDIFF('2019-07-27', activity_date) BETWEEN 0 AND 29
-	- Method 4: 
-		- activity_date BETWEEN date_sub('2019-07-27', INTERVAL 29 DAY) AND '2019-07-27'
+		- option 3: DATE_SUB(date, INTERVAL value unit)
+			- returns a date/datetime after the specified interval is subtracted from given date
+			- activity_date BETWEEN date_sub('2019-07-27', INTERVAL 29 DAY) AND '2019-07-27'
 
 Solution:
 ```
