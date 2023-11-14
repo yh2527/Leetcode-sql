@@ -89,11 +89,11 @@ Other Points:
 
 Solution 1 (CTE):
 ```
-WITH(
+WITH sales_w_products AS (
     SELECT Sales.*, product_name
     FROM Sales LEFT JOIN Product
         on SALES.product_id = Product.product_id
-) AS sales_w_products
+)
 SELECT DISTINCT buyer_id
 FROM sales_w_products sp
 WHERE sp.product_name = 'S8'
