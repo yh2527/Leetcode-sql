@@ -16,4 +16,4 @@ FROM(
         ON t.team_id = m.host_team or t.team_id = m.guest_team
     GROUP BY team_id
 )
-ORDER BY scores DESC, team_name
+ORDER BY scores DESC, team_id
