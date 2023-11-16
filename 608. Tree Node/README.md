@@ -1,120 +1,104 @@
-<h3>1083. Sales Analysis II</h3>
+<h3>608. Tree Node </h3>
 
-https://leetcode.ca/all/1083.html
+https://leetcode.com/problems/tree-node/description/
 
-Table: Product
+Table: Tree
+
 ```
-+--------------+---------+
-| Column Name  | Type    |
-+--------------+---------+
-| product_id   | int     |
-| product_name | varchar |
-| unit_price   | int     |
-+--------------+---------+
-product_id is the primary key of this table.
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| id          | int  |
+| p_id        | int  |
++-------------+------+
+id is the column with unique values for this table.
+Each row of this table contains information about the id of a node and the id of its parent node in a tree.
+The given structure is always a valid tree.
+
+```
+ 
+Each node in the tree can be one of three types:
+
+- "Leaf": if the node is a leaf node.
+- "Root": if the node is the root of the tree.
+- "Inner": If the node is neither a leaf node nor a root node.
+Write a solution to report the type of each node in the tree.
+
+Return the result table in any order.
+
+The result format is in the following example.
+
+Example 1:
+```
+Input: 
+Tree table:
++----+------+
+| id | p_id |
++----+------+
+| 1  | null |
+| 2  | 1    |
+| 3  | 1    |
+| 4  | 2    |
+| 5  | 2    |
++----+------+
+Output: 
++----+-------+
+| id | type  |
++----+-------+
+| 1  | Root  |
+| 2  | Inner |
+| 3  | Leaf  |
+| 4  | Leaf  |
+| 5  | Leaf  |
++----+-------+
+Explanation: 
+Node 1 is the root node because its parent node is null and it has child nodes 2 and 3.
+Node 2 is an inner node because it has parent node 1 and child node 4 and 5.
+Nodes 3, 4, and 5 are leaf nodes because they have parent nodes and they do not have child nodes.
+
 ```
 
-Table: Sales
+Example 2:
 ```
-+-------------+---------+
-| Column Name | Type    |
-+-------------+---------+
-| seller_id   | int     |
-| product_id  | int     |
-| buyer_id    | int     |
-| sale_date   | date    |
-| quantity    | int     |
-| price       | int     |
-+------ ------+---------+
-This table has no primary key, it can have repeated rows.
-product_id is a foreign key to Product table.
+Input: 
+Tree table:
++----+------+
+| id | p_id |
++----+------+
+| 1  | null |
++----+------+
+Output: 
++----+-------+
+| id | type  |
++----+-------+
+| 1  | Root  |
++----+-------+
+Explanation: If there is only one node on the tree, you only need to output its root attributes.
 ```
-
-Example:
-```
-Product table:
-+------------+--------------+------------+
-| product_id | product_name | unit_price |
-+------------+--------------+------------+
-| 1          | S8           | 1000       |
-| 2          | G4           | 800        |
-| 3          | iPhone       | 1400       |
-+------------+--------------+------------+
-
-Sales table:
-+-----------+------------+----------+------------+----------+-------+
-| seller_id | product_id | buyer_id | sale_date  | quantity | price |
-+-----------+------------+----------+------------+----------+-------+
-| 1         | 1          | 1        | 2019-01-21 | 2        | 2000  |
-| 1         | 2          | 2        | 2019-02-17 | 1        | 800   |
-| 2         | 1          | 3        | 2019-06-02 | 1        | 800   |
-| 3         | 3          | 3        | 2019-05-13 | 2        | 2800  |
-+-----------+------------+----------+------------+----------+-------+
-
-Result table:
-+-------------+
-| buyer_id    |
-+-------------+
-| 1           |
-+-------------+
-The buyer with id 1 bought an S8 but didn't buy an iPhone. The buyer with id 3 bought both.
-```
-Question: Write an SQL query that reports the buyers who have bought S8 but not iPhone. Note that S8 and iPhone are products present in the Product table.
 
 ---
 Overview:
-- select distinct buyer_id with 'S8' product purchase
-- filter out the buyer_id with 'iPhone' product purchase
+- CASE WHEN or UNION
 
-Other Points:
-- NOT IN vs NOT EXISTS
-	- NOT IN: 
-		- exclude rows based on a list of values, used when you have a list of static values or when you're using a subquery to generate a list.
-		- If there are any NULL values returned by the subquery in the NOT IN list, the entire query will return zero results.
-		- SQL standard's treatment of NULL is "unknown."
-		```
- 		  SELECT *
-		  FROM TableA
-		  WHERE ColumnX NOT IN (SELECT ColumnY FROM TableB);
-  		```
-
-	- NOT EXISTS: 
-		- used with a subquery and check if the subquery returns any rows. If the subquery returns no rows, the NOT EXISTS condition is true.
-		- NOT EXISTS will still include rows in the result set if there are NULL values encountered in the subquery.
-		```
-  		  SELECT *
-		  FROM TableA a
-		  WHERE NOT EXISTS (SELECT 1 FROM TableB b WHERE b.ColumnY = a.ColumnX);
-  		```
-
-Solution 1 (CTE):
+Solution 1 (CASE WHEN):
 ```
-WITH sales_w_products AS (
-    SELECT Sales.*, product_name
-    FROM Sales LEFT JOIN Product
-        on SALES.product_id = Product.product_id
-)
-SELECT DISTINCT buyer_id
-FROM sales_w_products sp
-WHERE sp.product_name = 'S8'
-    AND NOT EXISTS (
-        SELECT 1
-        FROM sales_w_products sp2
-        WHERE sp2.product_name = 'iPhone'
-            AND sp.buyer_id = sp2.buyer_id
-    )
+SELECT id, 
+        CASE 
+            WHEN p_id IS NULL 
+                THEN 'Root'
+            WHEN id IN (SELECT p_id FROM Tree WHERE p_id IS NOT NULL)
+                THEN 'Inner'
+            ELSE 'Leaf' END AS type
+    FROM Tree
 ```
 
-Solution 2(direct joins):
+Solution 2 (UNION):
 ```
-select distinct buyer_id 
-    from Sales s left join Product p 
-        on s.product_id = p.product_id
-    where p.product_name = 'S8'
-    and s.buyer_id not in (
-        select s.buyer_id 
-        from Sales s left join Product p 
-            on s.product_id = p.product_id
-        where p.product_name = 'iPhone'
-    );
+SELECT id, 'Root' AS TYPE FROM Tree WHERE p_id IS NULL 
+    UNION
+    SELECT id, 'Inner' AS TYPE FROM Tree 
+        WHERE p_id IS NOT NULL AND id IN (SELECT DISTINCT p_id FROM Tree WHERE p_id IS NOT NULL)
+    UNION
+    SELECT id, 'Leaf' AS TYPE FROM Tree 
+        WHERE p_id IS NOT NULL AND id NOT IN (SELECT DISTINCT p_id FROM Tree WHERE p_id IS NOT NULL)
 ```
