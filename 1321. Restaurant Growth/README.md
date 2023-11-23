@@ -1,113 +1,99 @@
-<h3>1097. Game Play Analysis V</h3>
+<h3>1321. Restaurant Growth</h3>
 
-https://leetcode.ca/all/1097.html
+https://leetcode.com/problems/restaurant-growth/description/
 
-Table: Activity
-
-```
-+--------------+---------+
-| Column Name  | Type    |
-+--------------+---------+
-| player_id    | int     |
-| device_id    | int     |
-| event_date   | date    |
-| games_played | int     |
-+--------------+---------+
-(player_id, event_date) is the primary key of this table.
-This table shows the activity of players of some game.
-Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on some day using some device.
+Table: Customer
 
 ```
- 
-We define the install date of a player to be the first login day of that player.
-
-We also define day 1 retention of some date X to be the number of players whose install date is X and they logged back in on the day right after X, divided by the number of players whose install date is X, rounded to 2 decimal places.
-
-Write an SQL query that reports for each install date, the number of players that installed the game on that day and the day 1 retention.
-
-The query result format is in the following example:
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| customer_id   | int     |
+| name          | varchar |
+| visited_on    | date    |
+| amount        | int     |
++---------------+---------+
+In SQL,(customer_id, visited_on) is the primary key for this table.
+This table contains data about customer transactions in a restaurant.
+visited_on is the date on which the customer with ID (customer_id) has visited the restaurant.
+amount is the total paid by a customer.
 
 ```
-Activity table:
-+-----------+-----------+------------+--------------+
-| player_id | device_id | event_date | games_played |
-+-----------+-----------+------------+--------------+
-| 1         | 2         | 2016-03-01 | 5            |
-| 1         | 2         | 2016-03-02 | 6            |
-| 2         | 3         | 2017-06-25 | 1            |
-| 3         | 1         | 2016-03-01 | 0            |
-| 3         | 4         | 2016-07-03 | 5            |
-+-----------+-----------+------------+--------------+
+You are the restaurant owner and you want to analyze a possible expansion (there will be at least one customer every day).
 
-Result table:
-+------------+----------+----------------+
-| install_dt | installs | Day1_retention |
-+------------+----------+----------------+
-| 2016-03-01 | 2        | 0.50           |
-| 2017-06-25 | 1        | 0.00           |
-+------------+----------+----------------+
-Player 1 and 3 installed the game on 2016-03-01 but only player 1 logged back in on 2016-03-02 so the day 1 retention of 2016-03-01 is 1 / 2 = 0.50
-Player 2 installed the game on 2017-06-25 but didn't log back in on 2017-06-26 so the day 1 retention of 2017-06-25 is 0 / 1 = 0.00
+Compute the moving average of how much the customer paid in a seven days window (i.e., current day + 6 days before). average_amount should be rounded to two decimal places.
 
+Return the result table ordered by visited_on in ascending order.
+
+The result format is in the following example.
+
+Example 1:
+
+```
+Input: 
+Customer table:
++-------------+--------------+--------------+-------------+
+| customer_id | name         | visited_on   | amount      |
++-------------+--------------+--------------+-------------+
+| 1           | Jhon         | 2019-01-01   | 100         |
+| 2           | Daniel       | 2019-01-02   | 110         |
+| 3           | Jade         | 2019-01-03   | 120         |
+| 4           | Khaled       | 2019-01-04   | 130         |
+| 5           | Winston      | 2019-01-05   | 110         | 
+| 6           | Elvis        | 2019-01-06   | 140         | 
+| 7           | Anna         | 2019-01-07   | 150         |
+| 8           | Maria        | 2019-01-08   | 80          |
+| 9           | Jaze         | 2019-01-09   | 110         | 
+| 1           | Jhon         | 2019-01-10   | 130         | 
+| 3           | Jade         | 2019-01-10   | 150         | 
++-------------+--------------+--------------+-------------+
+Output: 
++--------------+--------------+----------------+
+| visited_on   | amount       | average_amount |
++--------------+--------------+----------------+
+| 2019-01-07   | 860          | 122.86         |
+| 2019-01-08   | 840          | 120            |
+| 2019-01-09   | 840          | 120            |
+| 2019-01-10   | 1000         | 142.86         |
++--------------+--------------+----------------+
+Explanation: 
+1st moving average from 2019-01-01 to 2019-01-07 has an average_amount of (100 + 110 + 120 + 130 + 110 + 140 + 150)/7 = 122.86
+2nd moving average from 2019-01-02 to 2019-01-08 has an average_amount of (110 + 120 + 130 + 110 + 140 + 150 + 80)/7 = 120
+3rd moving average from 2019-01-03 to 2019-01-09 has an average_amount of (120 + 130 + 110 + 140 + 150 + 80 + 110)/7 = 120
+4th moving average from 2019-01-04 to 2019-01-10 has an average_amount of (130 + 110 + 140 + 150 + 80 + 110 + 130 + 150)/7 = 142.86
 ```
 ---
 Overview:
 - There are several layers to this question - 
-- Get the installation date for each player
-	- JOIN:  a1.player_id = a2.player_id AND a1.event_date > a2.event_date WHERE a2.event_date IS NULL
-	- Subquery: MIN(event_date) GROUP BY player_id
-	- Window function: FIRST_VALUE(event_date) OVER(PARTITION BY player_id ORDER BY event_date)
-- Get whether player played on the next day
-	- JOIN: a1.player_id = a3.player_id AND DATEDIFF(a3.event_date, a1.event_date) = 1
-	- DATE_SUB(IFNULL(LEAD(event_date) OVER(PARTITION BY player_id ...
-- As a last step, group by install_dt and do the required calculations
+- Inner layer: create a table that has distinct visited_on values with each day's corresponding amount using GROUP BY
+- Middle layer: calculate 7 days total using WINDOW function
+- Outer layer: calculate moving average by dividing the 7-day-sum from the middle layer by 7. Also limit visited_on dates that have at least 7 prior days presented in the data by looking at DATEDIFF in the WHERE clause
 
-Solution 1 (joins):
+Solution:
 ```
 SELECT 
-    a1.event_date AS install_dt, 
-    COUNT(a1.player_id) AS installs, 
-    ROUND(COUNT(a3.player_id) / COUNT(a1.player_id), 2) AS Day1_retention
-FROM 
-    Activity a1 
-    LEFT JOIN Activity a2 ON a1.player_id = a2.player_id AND a1.event_date > a2.event_date
-    LEFT JOIN Activity a3 ON a1.player_id = a3.player_id AND DATEDIFF(a3.event_date, a1.event_date) = 1
-WHERE 
-    a2.event_date IS NULL
-GROUP BY 
-    a1.event_date;
-```
-
-Solution 2 (window function/CTE):
-```
-WITH installation AS (
+  visited_on, 
+  sum_seven_days AS amount, 
+  ROUND(sum_seven_days / 7, 2) AS average_amount
+FROM (
+  SELECT 
+    visited_on, 
+    SUM(amount) OVER (
+      ORDER BY visited_on 
+      RANGE BETWEEN INTERVAL 6 DAY PRECEDING AND CURRENT ROW
+    ) AS sum_seven_days
+  FROM (
     SELECT 
-        MIN(event_date) AS install_dt, 
-        player_id
+      visited_on, 
+      SUM(amount) AS amount
     FROM 
-        Activity
+      Customer
     GROUP BY 
-        player_id
-),
-next_play AS (
-    SELECT 
-        player_id, 
-        event_date,
-        CASE 
-            WHEN DATE_SUB(IFNULL(LEAD(event_date) OVER(PARTITION BY player_id ORDER BY event_date), event_date), 1) = event_date
-            THEN 1 
-            ELSE 0 
-        END AS next_date
-    FROM 
-        Activity
-)
-SELECT 
-    i.install_dt, 
-    COUNT(i.player_id) AS installs, 
-    ROUND(SUM(n.next_date) / COUNT(*), 2) AS Day1_retention
-FROM 
-    installation i 
-    LEFT JOIN next_play n ON i.player_id = n.player_id AND i.install_dt = n.event_date
-GROUP BY 
-    i.install_dt
+      visited_on
+  ) AS Daily
+) AS result
+WHERE 
+  DATEDIFF(visited_on, (SELECT MIN(visited_on) FROM Customer)) >= 6
+ORDER BY 
+  visited_on;
 ```
