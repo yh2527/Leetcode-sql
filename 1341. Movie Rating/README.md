@@ -95,6 +95,9 @@ Frozen 2 and Joker have a rating average of 3.5 in February but Frozen 2 is smal
 ```
 ---
 
+- Use "UNION ALL" to keep potential duplicate records
+- When using UNION or UNION ALL, you cannot have ORDER BY or LIMIT clauses within the individual SELECT statements.
+
 Solution 1:
 ```
 SELECT min(name) AS results
